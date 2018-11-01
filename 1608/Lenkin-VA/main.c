@@ -22,14 +22,22 @@ int main(int argc, char *argv[]) {
 	if (ProcRank == 0) {
 		gets(string);
 		int k = size / ProcNum;
+		int w = size % ProcNum;
+		int g = k * ProcNum;
+		int TotalSum;
 		MPI_Bcast(&k, 1, MPI_INT, 0, MPI_COMM_WORLD);
 		for (int i = 1; i < ProcNum; i++)
-			MPI_Send(string + (k * i),k, MPI_DOUBLE, i, 0, MPI_COMM_WORLD);
+			MPI_Send(string + (k * (i-1)),k, MPI_DOUBLE, i, 0, MPI_COMM_WORLD);
+		if (w != 0) {
+			for (int i = g; i < w + g; i++)
+				if (string[i] == '.' || string[i] == '?' || string[i] == '!')
+					tmp += 1;
+		}
 		for (int i = 0; i < k; i++)
 			if (string[i] == '.' || string[i] == '?' || string[i] == '!')
 				tmp += 1;
 		
-		int TotalSum;
+		
 		MPI_Reduce(&tmp, &TotalSum, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
 		printf("Total Sum = %d\n", TotalSum);
 		
